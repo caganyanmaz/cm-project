@@ -17,6 +17,15 @@ void dm_add(int m, int n, const double *A, const double *B, double *C) {
 		}
 	}
 }
+
+void dm_inline_add(int m, int n, double *A, const double *B) {
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			A[i * n + j] += B[i * n + j];
+		}
+	}
+}
+
 void dm_mul(int m, int k, int n, const double *A, const double *B, double *C) {
 	for (int i = 0; i < m; i++) {
 		for (int j = 0; j < n; j++) {
@@ -28,21 +37,49 @@ void dm_mul(int m, int k, int n, const double *A, const double *B, double *C) {
 	}
 }
 
-void dm_row_swap(int m, int n, int I, int J, double *A, double *b);
-void dm_row_mul(int m, int n, int I, double lambda, double *A, double *b); 
-void dm_row_add(int m, int n, int I, int J, double lambda, double *A, double *b);
+void dm_transpose(int m, int n, const double *A, double *B) {
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			B[j * m + i] = A[i * n + j];
+		}
+	}
+}
 
-bool dm_solve(int m, int n, double *A, double *x, double *b) {
+double dm_dot_product(int n, const double *a, const double *b) {
+	double res = 0;
+	for (int i = 0; i < n; i++) {
+		res += a[i] * b[i];
+	}
+	return res;
+}
+
+void dm_scalar_mul(int m, int n, double lambda, const double *A, double *B) {
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			B[i * n + j] = A[i * n + j] * lambda;
+		}
+	}
+}
+
+void dm_inline_scalar_mul(int m, int n, double lambda, double *A) {
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			A[i * n + j] *= lambda;
+		}
+	}
+}
+
+bool adm_solve(int m, int n, double *A, double *x, double *b) {
 	int current_index = 0;
 	for (int j = 0; j < min(m, n); j++) {
 		int i = current_index;
 		while (i < m && fabs(A[i * n + j]) <= EPSILON) i++;
 		if (i == m)
 			continue;
-		dm_row_swap(m, n, i, current_index, A, b);
-		dm_row_mul(m, n, current_index, 1 / A[current_index * n + j], A, b);
+		adm_row_swap(m, n, i, current_index, A, b);
+		adm_row_mul(m, n, current_index, 1 / A[current_index * n + j], A, b);
 		for (i = current_index+1; i < m; i++) {
-			dm_row_add(m, n, current_index, i, -A[i * n + j], A, b);
+			adm_row_add(m, n, current_index, i, -A[i * n + j], A, b);
 		}
 		current_index++;
 	}
@@ -64,7 +101,7 @@ bool dm_solve(int m, int n, double *A, double *x, double *b) {
 	return true;
 }
 
-void dm_row_swap(int m, int n, int I, int J, double *A, double *b) {
+void adm_row_swap(int m, int n, int I, int J, double *A, double *b) {
 	assert(0 <= I && I < m && 0 <= J && J < m);
 	if (I == J)
 		return;
@@ -79,7 +116,7 @@ void dm_row_swap(int m, int n, int I, int J, double *A, double *b) {
 
 }
 
-void dm_row_mul(int m, int n, int I, double lambda, double *A, double *b) {
+void adm_row_mul(int m, int n, int I, double lambda, double *A, double *b) {
 	assert(0 <= I && I < m);
 	assert(fabs(lambda) > EPSILON);
 	if (fabs(lambda - 1) <= EPSILON)
@@ -90,13 +127,22 @@ void dm_row_mul(int m, int n, int I, double lambda, double *A, double *b) {
 	}
 }
 
-void dm_row_add(int m, int n, int I, int J, double lambda, double *A, double *b) {
+void adm_row_add(int m, int n, int I, int J, double lambda, double *A, double *b) {
 	assert(0 <= I && I < m && 0 <= J && J < m && I != J);
 	if (fabs(lambda) < EPSILON)
 		return;
 	b[J] += b[I] * lambda;
 	for (int j = 0; j < n; j++) {
 		A[J * n + j] += A[I * n + j] * lambda;
+	}
+}
+
+void dm_row_mul(int m, int n, int I, double lambda, double *A) {
+	assert(0 <= I && I < m);
+	if (fabs(lambda - 1) <= EPSILON)
+		return;
+	for (int j = 0; j < n; j++) {
+		A[I * n + j] *= lambda;
 	}
 }
 
