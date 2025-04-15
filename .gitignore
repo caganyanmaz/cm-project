@@ -1,2 +1,4 @@
 *.txt
 *.out
+main
+matrix_tests
