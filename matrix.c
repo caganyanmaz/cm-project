@@ -3,7 +3,7 @@
 #include <math.h>
 
 #include "matrix.h"
-#define EPSILON 1e-16
+#define EPSILON 1e-8
 
 int min(int a, int b) {
 	if (a < b) return a;
@@ -92,7 +92,7 @@ bool adm_solve(int m, int n, double *A, double *x, double *b) {
 
 	for (int i = current_index-1; i >= 0; i--) {
 		int pivot = 0;
-		while (pivot < n && fabs(A[i * n + pivot]) <= EPSILON) pivot++;
+		while (pivot < n && fabs(A[i * n + pivot] - 1) > EPSILON) pivot++;
 		x[pivot] = b[i];
 		for (int j = pivot + 1; j < n; j++) {
 			x[pivot] -= x[j] * A[i * n + j];
@@ -144,6 +144,16 @@ void dm_row_mul(int m, int n, int I, double lambda, double *A) {
 	for (int j = 0; j < n; j++) {
 		A[I * n + j] *= lambda;
 	}
+}
+
+bool dm_check_equal(int m, int n, const double *a, const double *b, double epsilon) {
+	for (int i = 0; i < m; i++) {
+		for (int j = 0; j < n; j++) {
+			if (fabs(a[i * n + j] - b[i * n + j]) >= epsilon)
+				return false;
+		}
+	}
+	return true;
 }
 
 

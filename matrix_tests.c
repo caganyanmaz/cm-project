@@ -1,10 +1,15 @@
 #include <math.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <assert.h>
 #include "matrix.h"
 #define EPSILON 1e-16
 
+
+double rd(double lo, double hi) {
+	return (((double) rand()) / RAND_MAX) * (hi - lo) + lo;
+}
 
 bool d_equal(double a, double b) {
 	return fabs(a - b) < 4 * EPSILON;
@@ -29,7 +34,7 @@ void test1() {
 		3,
 	};
 
-	bool res = dm_solve(2, 2, A, x, b);
+	bool res = adm_solve(2, 2, A, x, b);
 	assert(res);
 	assert(d_equal(x[0], 5));
 	assert(d_equal(x[1], 3));
@@ -54,7 +59,7 @@ void test2() {
 		3,
 	};
 
-	bool res = dm_solve(2, 2, A, x, b);
+	bool res = adm_solve(2, 2, A, x, b);
 	assert(res);
 	assert(d_equal(x[0], 5));
 	assert(d_equal(x[1], -2));
@@ -79,7 +84,7 @@ void test3() {
 		3,
 	};
 
-	bool res = dm_solve(2, 2, A, x, b);
+	bool res = adm_solve(2, 2, A, x, b);
 	assert(res);
 	assert(d_equal(x[0], 2.5));
 	assert(d_equal(x[1], 0.5));
@@ -104,7 +109,7 @@ void test4() {
 		1,
 	};
 
-	bool res = dm_solve(2, 2, A, x, b);
+	bool res = adm_solve(2, 2, A, x, b);
 	assert(res);
 	assert(d_equal(x[0], 0));
 	assert(d_equal(x[1], 1));
@@ -132,7 +137,7 @@ void test5() {
 		6,
 	};
 
-	bool res = dm_solve(3, 2, A, x, b);
+	bool res = adm_solve(3, 2, A, x, b);
 	assert(res);
 	assert(d_equal(x[0], 5));
 	assert(d_equal(x[1], -2));
@@ -160,7 +165,7 @@ void test6() {
 		5,
 	};
 
-	bool res = dm_solve(3, 2, A, x, b);
+	bool res = adm_solve(3, 2, A, x, b);
 	assert(!res);
 }
 
@@ -184,7 +189,7 @@ void test7() {
 		3,
 	};
 
-	bool res = dm_solve(2, 3, A, x, b);
+	bool res = adm_solve(2, 3, A, x, b);
 	assert(res);
 	assert(d_equal(x[0], 5));
 	assert(d_equal(x[1], -2));
@@ -248,7 +253,42 @@ void test9() {
 	}
 }
 
+void test10() {
+	for (int i = 0; i < 1000; i++) 
+	{
+		printf("%d\n", i);
+		double A[] = {
+			rd(-10, 10), rd(-10, 10),
+			rd(-10, 10), rd(-10, 10)
+		};
+		double x[] = {
+			rd(-10, 10), rd(-10, 10)
+		};
+		double b[] = {0, 0};
+		dm_mul(2, 2, 1, A, x, b);
+		double tmpA[4];
+		double tmpb[2];
+		double tmp[2];
+		memcpy(tmpA, A, sizeof(A));
+		memcpy(tmpb, b, sizeof(b));
+		adm_solve(2, 2, tmpA, x, tmpb);
+		dm_mul(2, 2, 1, A, x, tmp);
+		if (!dm_check_equal(2, 1, tmp, b, 1e-4)) {
+
+			printf("A:\n%f %f\n%f %f\n", A[0], A[1], A[2], A[3]);
+			printf("tmpA:\n%f %f\n%f %f\n", tmpA[0], tmpA[1], tmpA[2], tmpA[3]);
+			printf("x:\n%f %f\n", x[0], x[1]);
+			printf("b:\n%f %f\n", b[0], b[1]);
+			printf("tmpb:\n%f %f\n", tmpb[0], tmpb[1]);
+			assert(false);
+		}
+	
+
+	}
+}
+
 int main() {
+	srand(0);
 	test1();
 	test2();
 	test3();
@@ -258,6 +298,7 @@ int main() {
 	test7();
 	test8();
 	test9();
+	test10();
 	printf("All correct!\n");
 }
 

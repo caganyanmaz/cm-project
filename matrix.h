@@ -10,6 +10,8 @@ void dm_mul(int m, int k, int n, const double *A, const double *B, double *C);
 void dm_transpose(int m, int n, const double *A, double *B);
 double dm_dot_product(int n, const double *a, const double *b);
 
+bool dm_check_equal(int m, int n, const double *a, const double *b, double epsilon);
+
 void dm_scalar_mul(int m, int n, double lambda, const double *A, double *B);
 void dm_inline_scalar_mul(int m, int n, double lambda, double *A);
 
